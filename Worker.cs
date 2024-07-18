@@ -24,7 +24,7 @@ namespace DocumentService
         {
             _watcher = new FileSystemWatcher();
             _watcher.Path = sourceDirectory;
-            _watcher.Filter = ".";
+            _watcher.Filter = "*.*";
             _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
 
             _watcher.Created += OnChanged;
