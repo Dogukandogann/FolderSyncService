@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -14,11 +15,16 @@ namespace DocumentService
     {
         private readonly ILogger<Worker> _logger;
         private FileSystemWatcher _watcher;
-        private static string sourceDirectory = @"C:\Users\Senem\Desktop\Deneme1";
-        private static string targetDirectory = @"C:\Users\Senem\Desktop\Deneme2";
-        public Worker(ILogger<Worker> logger)
+        private readonly IConfiguration _configuration;
+        private  string sourceDirectory;
+        private  string targetDirectory;
+        public Worker(ILogger<Worker> logger,IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+
+            sourceDirectory = _configuration["FileSettings:SourceDirectory"];
+            targetDirectory = _configuration["FileSettings:TargetDirectory"];
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -43,7 +49,7 @@ namespace DocumentService
             if (IsValidFileExtension(e.FullPath))
             {
                 CopyFile(e.FullPath);
-                Log.Information($"Dosya eklendi veya güncellendi {e.ChangeType}: {e.FullPath}");
+                Log.Information($"Dosya eklendi {e.ChangeType}: {e.FullPath}");
             }
             else
             {
@@ -57,6 +63,7 @@ namespace DocumentService
             {
                 CopyFile(e.FullPath);
                 Log.Information($"Dosya adı değiştirildi: {e.OldFullPath} --> {e.FullPath}");
+                DeleteFile(e.OldFullPath);
             }
             else
             {
